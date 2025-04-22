@@ -47,8 +47,7 @@ def robust_sliding_mode(state, t, state_d, sys_params, ctrl_params):
 
     param_vector = p(sys_params)*.9
     delta_p = delta_p_classic(Y.T @ s)
-    # delta_p = delta_p_lp(Y.T @ q_star)
-    # print('delta norm ', np.linalg.norm(delta_p))
+    # delta_p = delta_p_lp(Y.T @ s)
 
     return Y @ (param_vector+delta_p) + K @ s
 

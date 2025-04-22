@@ -1,6 +1,11 @@
 import numpy as np
 from matrices import skew
 from matrices import quaternion_product, vect2quat, cross_product
+import random
+def disturbance(t):
+    return 70* np.sin(10 * t), 0* 10 * np.cos(5 * t)
+    # return np.random.normal(0, 0.005), np.random.normal(0, 0.005)
+    # return 10*random.gauss(0.5, 0.01), 10*random.gauss(0.05, 0.01)
 
 def system(state, t, Q, params):
     m, g = params['m'], params['g']
@@ -9,11 +14,10 @@ def system(state, t, Q, params):
 
     # equation 1
     dr = v
-
+    f_disturbance, tau_disturbance = disturbance(t)
     # equation 2
     Q_v = Q[:3]
-    dv = m ** (-1) * Q_v - np.array([0, 0, -g])
-
+    dv = m ** (-1) * (Q_v + f_disturbance) - np.array([0, 0, -g])
     # equation 3
     dq = -1/2 * quaternion_product(vect2quat(w), q)
 
@@ -22,7 +26,8 @@ def system(state, t, Q, params):
     Im_inv = np.linalg.inv(Im)
 
     tau = Q[3:]
-    tau_prime = tau - cross_product(w, Im @ w)
+    tau_prime = tau + tau_disturbance - cross_product(w, Im @ w)
+    # print(tau_disturbance)
     dw = Im_inv @ tau_prime
 
     dstate = np.concatenate([dr, dv, dq, dw])
@@ -62,3 +67,9 @@ def p(params):
     m = params['m']
     I = params['I']
     return np.array([m, I[0][0], I[1][1], I[2][2], I[0][1], I[0][2], I[1][2]])
+
+
+
+# print(np.random.normal(0, 7.05), np.random.normal(0, 10.05))
+# t = 1/2
+# print(7* np.sin(10 * t), 10 * np.cos(5 * t))
